@@ -4,9 +4,11 @@ import requests
 st.set_page_config(page_title="Blog Idea & Blog Generator", page_icon="📝", layout="wide")
 
 # ---------------------------------------
-# CALL OPENROUTER API
+# GET API KEY FROM SECRETS
 # ---------------------------------------
-def generate_text(prompt, api_key):
+api_key = st.secrets["openrouter_api_key"]
+
+def generate_text(prompt):
     url = "https://openrouter.ai/api/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -32,67 +34,65 @@ def generate_text(prompt, api_key):
 # ---------------------------------------
 # STREAMLIT UI
 # ---------------------------------------
-st.title("📝 Blog Idea + Blog Generator (OpenRouter - Grok 4.1 Fast Free)")
-st.write("Generate ideas or a full blog using your free OpenRouter API key.")
+st.title("📝 Blog Idea + Blog Generator (Grok 4.1 Fast • Free • OpenRouter)")
+st.write("Generate blog ideas or full blogs using automatic API key from Streamlit Secrets.")
 
-api_key = st.text_input("🔑 Enter your OpenRouter API Key", type="password")
-
-topic = st.text_input("🧠 Blog Topic", placeholder="e.g., AI in Healthcare")
+topic = st.text_input("🧠 Blog Topic", placeholder="e.g., Benefits of AI in Healthcare")
 tone = st.selectbox("🎨 Tone", ["Professional", "Casual", "Humorous", "Inspirational", "Technical"])
-audience = st.text_input("👥 Audience", placeholder="e.g., Students, Developers, Beginners")
+audience = st.text_input("👥 Audience", placeholder="e.g., Students, Developers, Bloggers")
 creativity = st.slider("✨ Creativity Level", 1, 10, 5)
 length = st.selectbox("✍️ Blog Length (words)", ["300", "500", "700", "1000", "1500", "2000"])
 
 col1, col2 = st.columns(2)
-
 
 # ---------------------------------------
 # IDEA GENERATOR
 # ---------------------------------------
 with col1:
     if st.button("💡 Generate Blog Idea"):
-        if not api_key or not topic:
-            st.error("Please enter your API key and topic!")
+        if not topic:
+            st.error("Please enter a topic!")
         else:
             prompt = f"""
             Generate a creative blog idea based on:
-            Topic: {topic}
-            Tone: {tone}
-            Audience: {audience}
-            Creativity: {creativity}/10
-            
-            Give:
-            - Title
-            - One-paragraph summary
-            - Suggested unique angle
+            - Topic: {topic}
+            - Tone: {tone}
+            - Audience: {audience}
+            - Creativity: {creativity}/10
+
+            Provide:
+            - Catchy title
+            - Summary paragraph
+            - Unique angle
             """
-            idea = generate_text(prompt, api_key)
+            idea = generate_text(prompt)
             st.success("🎉 Blog Idea Generated!")
             st.write(idea)
-
 
 # ---------------------------------------
 # FULL BLOG GENERATOR
 # ---------------------------------------
 with col2:
     if st.button("📝 Generate Full Blog"):
-        if not api_key or not topic:
-            st.error("Please enter your API key and topic!")
+        if not topic:
+            st.error("Please enter a topic!")
         else:
             prompt = f"""
-            Write a full blog article.
-            Requirements:
-            - Topic: {topic}
-            - Tone: {tone}
-            - Audience: {audience}
-            - Creativity: {creativity}/10
-            - Length: {length} words
+            Write a complete blog article with:
+
+            Topic: {topic}
+            Tone: {tone}
+            Audience: {audience}
+            Creativity Level: {creativity}/10
+            Target Length: {length} words
+
+            Additional requirements:
             - SEO-friendly headings
             - Human-like writing
-            - Clear structure
-            
-            Write the blog now.
+            - Engaging intro & conclusion
+            - Proper structure with H2/H3
             """
-            blog = generate_text(prompt, api_key)
+
+            blog = generate_text(prompt)
             st.success("📄 Full Blog Generated!")
             st.write(blog)
