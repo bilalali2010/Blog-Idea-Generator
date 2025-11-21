@@ -1,31 +1,98 @@
 import streamlit as st
-import random
+import requests
 
-st.set_page_config(page_title="Blog Idea Generator", page_icon="📝")
+st.set_page_config(page_title="Blog Idea & Blog Generator", page_icon="📝", layout="wide")
 
-def generate_blog_idea(topic, tone, audience, creativity, length):
-    templates = [
-        f"A {tone.lower()} blog post about **{topic}**, designed for {audience}.",
-        f"A {creativity.lower()} exploration of **{topic}** written in a {tone.lower()} tone.",
-        f"A blog idea focusing on **{topic}**, crafted for {audience} with a {tone.lower()} style.",
-        f"A unique angle on **{topic}**, blending a {tone.lower()} tone with {creativity.lower()} creativity.",
-    ]
-    idea = random.choice(templates)
-    return f"{idea}\n\nSuggested Length: {length} words"
+# ---------------------------------------
+# CALL OPENROUTER API
+# ---------------------------------------
+def generate_text(prompt, api_key):
+    url = "https://openrouter.ai/api/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "HTTP-Referer": "http://localhost",
+        "Content-Type": "application/json",
+    }
 
-st.title("📝 Blog Idea Generator")
-st.write("Generate creative blog ideas with adjustable parameters.")
+    payload = {
+        "model": "x-ai/grok-4.1-fast:free",
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": 1500,
+        "temperature": 0.8
+    }
+
+    response = requests.post(url, headers=headers, json=payload)
+
+    if response.status_code != 200:
+        return f"⚠️ Error: {response.text}"
+
+    return response.json()['choices'][0]['message']['content']
+
+
+# ---------------------------------------
+# STREAMLIT UI
+# ---------------------------------------
+st.title("📝 Blog Idea + Blog Generator (OpenRouter - Grok 4.1 Fast Free)")
+st.write("Generate ideas or a full blog using your free OpenRouter API key.")
+
+api_key = st.text_input("🔑 Enter your OpenRouter API Key", type="password")
 
 topic = st.text_input("🧠 Blog Topic", placeholder="e.g., AI in Healthcare")
 tone = st.selectbox("🎨 Tone", ["Professional", "Casual", "Humorous", "Inspirational", "Technical"])
 audience = st.text_input("👥 Audience", placeholder="e.g., Students, Developers, Beginners")
 creativity = st.slider("✨ Creativity Level", 1, 10, 5)
-length = st.selectbox("✍️ Blog Length", ["300", "500", "700", "1000", "1500"])
+length = st.selectbox("✍️ Blog Length (words)", ["300", "500", "700", "1000", "1500", "2000"])
 
-if st.button("Generate"):
-    if not topic or not audience:
-        st.error("Please complete all fields!")
-    else:
-        result = generate_blog_idea(topic, tone, audience, str(creativity), length)
-        st.success("🎉 Idea Generated!")
-        st.write(result)
+col1, col2 = st.columns(2)
+
+
+# ---------------------------------------
+# IDEA GENERATOR
+# ---------------------------------------
+with col1:
+    if st.button("💡 Generate Blog Idea"):
+        if not api_key or not topic:
+            st.error("Please enter your API key and topic!")
+        else:
+            prompt = f"""
+            Generate a creative blog idea based on:
+            Topic: {topic}
+            Tone: {tone}
+            Audience: {audience}
+            Creativity: {creativity}/10
+            
+            Give:
+            - Title
+            - One-paragraph summary
+            - Suggested unique angle
+            """
+            idea = generate_text(prompt, api_key)
+            st.success("🎉 Blog Idea Generated!")
+            st.write(idea)
+
+
+# ---------------------------------------
+# FULL BLOG GENERATOR
+# ---------------------------------------
+with col2:
+    if st.button("📝 Generate Full Blog"):
+        if not api_key or not topic:
+            st.error("Please enter your API key and topic!")
+        else:
+            prompt = f"""
+            Write a full blog article.
+            Requirements:
+            - Topic: {topic}
+            - Tone: {tone}
+            - Audience: {audience}
+            - Creativity: {creativity}/10
+            - Length: {length} words
+            - SEO-friendly headings
+            - Human-like writing
+            - Clear structure
+            
+            Write the blog now.
+            """
+            blog = generate_text(prompt, api_key)
+            st.success("📄 Full Blog Generated!")
+            st.write(blog)
