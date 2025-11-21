@@ -1,57 +1,31 @@
 import streamlit as st
-from transformers import T5Tokenizer, T5ForConditionalGeneration
+import random
 
-@st.cache_resource
-def load_model():
-    model_name = "t5-small"
-    tokenizer = T5Tokenizer.from_pretrained(model_name)
-    model = T5ForConditionalGeneration.from_pretrained(model_name)
-    return tokenizer, model
+st.set_page_config(page_title="Blog Idea Generator", page_icon="📝")
 
-tokenizer, model = load_model()
+def generate_blog_idea(topic, tone, audience, creativity, length):
+    templates = [
+        f"A {tone.lower()} blog post about **{topic}**, designed for {audience}.",
+        f"A {creativity.lower()} exploration of **{topic}** written in a {tone.lower()} tone.",
+        f"A blog idea focusing on **{topic}**, crafted for {audience} with a {tone.lower()} style.",
+        f"A unique angle on **{topic}**, blending a {tone.lower()} tone with {creativity.lower()} creativity.",
+    ]
+    idea = random.choice(templates)
+    return f"{idea}\n\nSuggested Length: {length} words"
 
-st.title("📝 Blog Idea Generator (FREE, No API Key)")
-st.write("Generate blog ideas with adjustable parameters using a free local model.")
+st.title("📝 Blog Idea Generator")
+st.write("Generate creative blog ideas with adjustable parameters.")
 
-topic = st.text_input("Enter your topic (e.g., AI tools, fitness, cooking):")
+topic = st.text_input("🧠 Blog Topic", placeholder="e.g., AI in Healthcare")
+tone = st.selectbox("🎨 Tone", ["Professional", "Casual", "Humorous", "Inspirational", "Technical"])
+audience = st.text_input("👥 Audience", placeholder="e.g., Students, Developers, Beginners")
+creativity = st.slider("✨ Creativity Level", 1, 10, 5)
+length = st.selectbox("✍️ Blog Length", ["300", "500", "700", "1000", "1500"])
 
-tone = st.selectbox(
-    "Select tone:",
-    ["Professional", "Casual", "Funny", "Serious", "Motivational"]
-)
-
-audience = st.text_input("Target audience (e.g., students, developers, beginners):")
-
-num_ideas = st.slider("How many ideas?", 1, 10, 5)
-
-creativity = st.slider("Creativity Level (Temperature)", 0.1, 1.5, 0.9)
-
-def generate_blog_idea(topic, tone, audience, creativity):
-    prompt = (
-        f"Generate a {tone} blog idea for the topic '{topic}' "
-        f"targeted at {audience}. Make it creative."
-    )
-    
-    input_text = "generate: " + prompt
-    inputs = tokenizer.encode(input_text, return_tensors="pt", max_length=128, truncation=True)
-
-    outputs = model.generate(
-        inputs,
-        max_length=80,
-        do_sample=True,
-        top_p=0.95,
-        temperature=creativity,
-        num_return_sequences=1
-    )
-
-    return tokenizer.decode(outputs[0], skip_special_tokens=True)
-
-if st.button("Generate Ideas"):
-    if topic.strip():
-        st.subheader("Generated Blog Ideas:")
-        for i in range(num_ideas):
-            idea = generate_blog_idea(topic, tone, audience, creativity)
-            st.write(f"**{i+1}. {idea}**")
-            st.write("---")
+if st.button("Generate"):
+    if not topic or not audience:
+        st.error("Please complete all fields!")
     else:
-        st.warning("Please enter a topic.")
+        result = generate_blog_idea(topic, tone, audience, str(creativity), length)
+        st.success("🎉 Idea Generated!")
+        st.write(result)
