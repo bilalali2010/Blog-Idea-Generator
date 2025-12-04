@@ -17,7 +17,8 @@ def generate_text(prompt):
     }
 
     payload = {
-        "model": "x-ai/grok-4.1-fast:free",
+        "model": "arcee-ai/trinity-mini:free",
+
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": 1500,
         "temperature": 0.8
