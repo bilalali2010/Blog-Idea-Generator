@@ -35,7 +35,7 @@ def generate_text(prompt):
 # ---------------------------------------
 # STREAMLIT UI
 # ---------------------------------------
-st.title("📝 Blog Idea + Blog Generator (Grok 4.1 Fast • Free • OpenRouter)")
+st.title("📝 Blog Idea + Blog Generator")
 st.write("Generate blog ideas or full blogs using automatic API key from Streamlit Secrets.")
 
 topic = st.text_input("🧠 Blog Topic", placeholder="e.g., Benefits of AI in Healthcare")
